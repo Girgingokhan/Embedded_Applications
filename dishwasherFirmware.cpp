@@ -17,7 +17,7 @@ Error Management: Detects all errors in the device (e.g., over-temperature, low 
 #include <string>
 #include <iostream>
 
-// Durum makinesi durumları
+// state machine for events
 enum class MachineState {
     Idle,
     Washing,
@@ -26,7 +26,7 @@ enum class MachineState {
     Error
 };
 
-// --- Sınıf Tanımları ---
+// button class
 class Button {
 private:
     GPIO_TypeDef* port;
@@ -125,7 +125,7 @@ public:
     }
 };
 
-// --- Global Nesneler ---
+// --- Global Objects
 Button onOffButton(GPIOA, GPIO_PIN_0);
 Button startStopButton(GPIOA, GPIO_PIN_1);
 Button program1Button(GPIOA, GPIO_PIN_2);
@@ -139,12 +139,12 @@ Relay heater(GPIOB, GPIO_PIN_1);
 
 Motor washMotor(GPIOB, GPIO_PIN_2);
 
-// Durum ve diğer değişkenler
+// initial state and global variables
 MachineState currentState = MachineState::Idle;
 float waterLevel = 0.0;
 float temperature = 0.0;
 
-// OLED ekran fonksiyonu
+// OLED screen function
 void displayStatus(const std::string& status, float water, float temp, const std::string& error = "") {
     char buffer[128];
     snprintf(buffer, sizeof(buffer), "Status: %s\nWater: %.1f\nTemp: %.1f\nError: %s",
@@ -152,14 +152,14 @@ void displayStatus(const std::string& status, float water, float temp, const std
     OLED_Display(buffer);
 }
 
-// Hata kontrol fonksiyonu
+// Fault control function
 bool checkForErrors() {
     if (waterLevel < 0.5) return true;  // Düşük su seviyesi
     if (temperature > 80.0) return true;  // Aşırı sıcaklık
     return false;
 }
 
-// Durum makinesi
+// state machine process
 void runStateMachine() {
     switch (currentState) {
         case MachineState::Idle:
@@ -198,7 +198,7 @@ void runStateMachine() {
     }
 }
 
-// Ana döngü
+
 int main() {
     HAL_Init();
     SystemClock_Config();
